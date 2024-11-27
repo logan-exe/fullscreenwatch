@@ -13,7 +13,7 @@ interface CountdownTime {
 const TimerApp: React.FC = () => {
   const [mode, setMode] = useState<Mode>("current-time");
   const [time, setTime] = useState<Date>(new Date());
-  const [timerValue, setTimerValue] = useState<number>(0); // Timer in seconds
+  const [timerValue, setTimerValue] = useState<number>(0);
   const [timerActive, setTimerActive] = useState<boolean>(false);
   const [countdownTime, setCountdownTime] = useState<CountdownTime>({
     hours: 0,
@@ -23,9 +23,8 @@ const TimerApp: React.FC = () => {
   const [countdownActive, setCountdownActive] = useState<boolean>(false);
   const [remainingTime, setRemainingTime] = useState<number>(0);
   const [isFullscreen, setIsFullscreen] = useState<boolean>(false);
-  const [isMounted, setIsMounted] = useState<boolean>(false); // Tracks client-side rendering
+  const [isMounted, setIsMounted] = useState<boolean>(false);
 
-  // Ensure the component renders only after mounting
   useEffect(() => {
     setIsMounted(true);
 
@@ -33,9 +32,8 @@ const TimerApp: React.FC = () => {
       setIsFullscreen(!!document.fullscreenElement);
     };
 
-    // Add event listener for fullscreen change
     document.addEventListener("fullscreenchange", handleFullscreenChange);
-    document.addEventListener("webkitfullscreenchange", handleFullscreenChange); // For Safari
+    document.addEventListener("webkitfullscreenchange", handleFullscreenChange);
 
     return () => {
       document.removeEventListener("fullscreenchange", handleFullscreenChange);
@@ -43,7 +41,6 @@ const TimerApp: React.FC = () => {
     };
   }, []);
 
-  // Effect to update the current time
   useEffect(() => {
     if (mode === "current-time" && isMounted) {
       const interval = setInterval(() => setTime(new Date()), 1000);
@@ -51,7 +48,6 @@ const TimerApp: React.FC = () => {
     }
   }, [mode, isMounted]);
 
-  // Effect to handle countdown
   useEffect(() => {
     if (mode === "countdown" && countdownActive && remainingTime > 0) {
       const interval = setInterval(() => setRemainingTime((prev) => prev - 1), 1000);
@@ -62,7 +58,6 @@ const TimerApp: React.FC = () => {
     }
   }, [mode, countdownActive, remainingTime]);
 
-  // Effect to handle timer
   useEffect(() => {
     if (mode === "timer" && timerActive && timerValue >= 0) {
       const interval = setInterval(() => setTimerValue((prev) => prev + 1), 1000);
@@ -87,39 +82,33 @@ const TimerApp: React.FC = () => {
   };
 
   const toggleFullscreen = () => {
-    const elem = document.documentElement; // The root HTML element
+    const elem: HTMLElement = document.documentElement;
 
     if (!document.fullscreenElement) {
       if (elem.requestFullscreen) {
         elem.requestFullscreen();
-      } else if ((elem as any).webkitRequestFullscreen) {
-        // Safari
-        (elem as any).webkitRequestFullscreen();
-      } else if ((elem as any).msRequestFullscreen) {
-        // IE11
-        (elem as any).msRequestFullscreen();
+      } else if ("webkitRequestFullscreen" in elem) {
+        (elem as HTMLElement & { webkitRequestFullscreen: () => Promise<void> }).webkitRequestFullscreen();
+      } else if ("msRequestFullscreen" in elem) {
+        (elem as HTMLElement & { msRequestFullscreen: () => Promise<void> }).msRequestFullscreen();
       }
     } else {
       if (document.exitFullscreen) {
         document.exitFullscreen();
-      } else if ((document as any).webkitExitFullscreen) {
-        // Safari
-        (document as any).webkitExitFullscreen();
-      } else if ((document as any).msExitFullscreen) {
-        // IE11
-        (document as any).msExitFullscreen();
+      } else if ("webkitExitFullscreen" in document) {
+        (document as Document & { webkitExitFullscreen: () => Promise<void> }).webkitExitFullscreen();
+      } else if ("msExitFullscreen" in document) {
+        (document as Document & { msExitFullscreen: () => Promise<void> }).msExitFullscreen();
       }
     }
   };
 
   if (!isMounted) {
-    // Prevent rendering until after the client is mounted
     return <div className="h-screen w-screen bg-black text-white flex items-center justify-center">Loading...</div>;
   }
 
   return (
     <div className="h-screen w-screen bg-black text-white flex flex-col items-center justify-center">
-      {/* Mode Selector */}
       {!isFullscreen && (
         <div className="mb-4">
           <label htmlFor="mode" className="mr-2 text-lg">
@@ -138,14 +127,12 @@ const TimerApp: React.FC = () => {
         </div>
       )}
 
-      {/* Display Time, Timer, or Countdown */}
       <div className={`font-bold ${isFullscreen ? "text-[15vw]" : "text-[8vw]"}`}>
         {mode === "current-time" && time.toLocaleTimeString()}
         {mode === "timer" && formatTime(timerValue)}
         {mode === "countdown" && formatTime(remainingTime)}
       </div>
 
-      {/* Timer Buttons */}
       {mode === "timer" && !isFullscreen && (
         <div className="mt-4">
           <button
@@ -163,7 +150,6 @@ const TimerApp: React.FC = () => {
         </div>
       )}
 
-      {/* Countdown Input */}
       {mode === "countdown" && !isFullscreen && (
         <div className="mt-4 flex flex-col items-center">
           <div className="flex space-x-2">
@@ -221,7 +207,6 @@ const TimerApp: React.FC = () => {
         </div>
       )}
 
-      {/* Fullscreen Button */}
       {!isFullscreen && (
         <button
           className="absolute bottom-4 right-4 bg-black text-white border border-white px-4 py-2 rounded hover:bg-gray-800 flex items-center space-x-2"

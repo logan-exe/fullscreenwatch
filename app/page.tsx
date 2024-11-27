@@ -35,9 +35,11 @@ const TimerApp: React.FC = () => {
 
     // Add event listener for fullscreen change
     document.addEventListener("fullscreenchange", handleFullscreenChange);
+    document.addEventListener("webkitfullscreenchange", handleFullscreenChange); // For Safari
 
     return () => {
       document.removeEventListener("fullscreenchange", handleFullscreenChange);
+      document.removeEventListener("webkitfullscreenchange", handleFullscreenChange);
     };
   }, []);
 
@@ -85,10 +87,28 @@ const TimerApp: React.FC = () => {
   };
 
   const toggleFullscreen = () => {
+    const elem = document.documentElement; // The root HTML element
+
     if (!document.fullscreenElement) {
-      document.documentElement.requestFullscreen();
+      if (elem.requestFullscreen) {
+        elem.requestFullscreen();
+      } else if ((elem as any).webkitRequestFullscreen) {
+        // Safari
+        (elem as any).webkitRequestFullscreen();
+      } else if ((elem as any).msRequestFullscreen) {
+        // IE11
+        (elem as any).msRequestFullscreen();
+      }
     } else {
-      document.exitFullscreen();
+      if (document.exitFullscreen) {
+        document.exitFullscreen();
+      } else if ((document as any).webkitExitFullscreen) {
+        // Safari
+        (document as any).webkitExitFullscreen();
+      } else if ((document as any).msExitFullscreen) {
+        // IE11
+        (document as any).msExitFullscreen();
+      }
     }
   };
 
